@@ -19,7 +19,10 @@ int main()
     for (int i = 0; i < 10; i++)
         buffer->node_blocks = malloc(sizeof(struct s_node_blocks) * 10);
     for (int i = 0; i < 10; i++)
+    {
         buffer->node_blocks[i].content = malloc(sizeof(char*) * 10);
+        buffer->node_blocks[i].content_size = 0;
+    }
 
     // buffer = READBACKUP ????;
 
@@ -54,7 +57,6 @@ void get_status(struct blockchain buffer)
 
 char** sort_input (char* input, int* ac, char** av)
 {
-    av = malloc(sizeof(char*)*10);
     *ac = 0;
 
     for (int i = 0; input[i]; i++)
@@ -88,25 +90,27 @@ char** sort_input (char* input, int* ac, char** av)
 
 int check_input(char* input, struct blockchain* buffer)
 {
+    char** av = malloc(sizeof(char*) * 10);
     int ac;
 
-    char** av = sort_input(input, &ac, av);
+    av = sort_input(input, &ac, av);
 
     for (int i = 0; i < ac; i++)
     {
-        if (my_strcmp(av[i], "add") == 0)
+        if (ac >= 2 && my_strcmp(av[i], "add") == 0)
         {
             i++;
-            if ( add_case(av, &i, buffer) == 1 ) return 1;
+            if ( add_case(av, ac, &i, buffer) == 1 ) return 1;
         }
-        // else if (my_strcmp(av[i], "rm") == 0)
+        // else if (ac >= 2 && my_strcmp(av[i], "rm") == 0)
         // {
         //     i++;
         //     if ( rm_case(av, &i) == 1) return 1;
         // }
         // else if (my_strcmp(av[i], "ls") == 0)
         // {
-        //     i++;
+        //     if(ac > 1)
+        //         i++;
         //     ls_case(av[i]);                     //INCOMPLETE
         // }
         // else if (my_strcmp(av[i], "sync") == 0)
@@ -119,7 +123,7 @@ int check_input(char* input, struct blockchain* buffer)
         }
         else
         {
-            printf("Command not found.");
+            write(1, "Command not found.\n", 19);
             return 1;
         }
     }
@@ -140,13 +144,22 @@ char* my_readline()
     char *buffer = malloc(1);
     int read_size = 1;
     int buf_size = 0;
+    int i = 0;
 
     while( read_size )
     {
-        buffer = my_realloc_str(buffer, buf_size, (buf_size + 100 + 1) );
+        buffer = my_realloc_str(buffer, buf_size, (buf_size + 101) );
         read_size = read(0, &buffer[buf_size], 100);
-    }
+        buf_size = buf_size + 100;
 
+        for(; i < buf_size; i++ )
+            if (buffer[i] == '\n')
+            {
+                buffer[i] = '\0';
+                read_size = 0;
+                break;
+            }
+    }
     return buffer;
 }
 

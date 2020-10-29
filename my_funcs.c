@@ -20,7 +20,8 @@ void my_strcpy (char* str1, char* str2)
 
 void my_strcat (char* str1, char* str2)
 {
-    for (int i = my_strlen(str1); (str1[i] = str2[i]); i++);
+    int i = strlen(str1);
+    for (int j = 0; (str1[i++] = str2[j]); j++);
 }
 
 int* my_realloc_int(int* array, int size, int new_size)
@@ -32,12 +33,21 @@ int* my_realloc_int(int* array, int size, int new_size)
     return out;
 }
 
-char* my_realloc_str(char* string, int old_size, int size)
+char* my_realloc_str(char* str, int old_size, int size)
 {
     char* out = malloc(size);
     for (int i = 0; i < old_size ; i++)
-        out[i] = string[i];
-    free(string);
+        out[i] = str[i];
+    free(str);
+    return out;
+}
+
+char** my_realloc_arr(char** arr, int old_size, int size)
+{
+    char** out = malloc(size);
+    for (int i = 0; i < old_size ; i++)
+        out[i] = arr[i];
+    free(arr);
     return out;
 }
 
@@ -47,11 +57,12 @@ struct s_node_blocks *my_realloc_struct(struct s_node_blocks *structure, int old
     for (int i = 0; i < old_size; i++)
     {
         output[i].content = structure[i].content;
+        output[i].content_size = structure[i].content_size;
     }
-    output->content_size = structure->content_size;
     for (int i = old_size; i < new_size; i++)
     {
         output[i].content = malloc(sizeof(char*) * 10);
+        output[i].content_size = 0;
     }
     free(structure);
     return output;
@@ -59,7 +70,7 @@ struct s_node_blocks *my_realloc_struct(struct s_node_blocks *structure, int old
 
 int my_atoi(const char* input)
 {
-    int buffer = 0, cur_val = 0, sign = 1;
+    int buffer = 0, cur_val = 0;
     int i = 0;
 
     if (input[0] == '-')
@@ -81,7 +92,7 @@ int my_atoi(const char* input)
         i++;
     }
 
-    return sign * buffer;
+    return buffer;
 }
 
 void my_itoa(char* p1, int p2)
@@ -92,17 +103,10 @@ void my_itoa(char* p1, int p2)
 
     do
     {
-        *--out = '0' + p3 % 10;
-        p3 /= 10;
+        *--out = '0' + p2 % 10;
+        p2 /= 10;
     }
-    while ( p3 );
+    while ( p2 );
 
     my_strcpy(p1 , out);
 }
-
-my_itoa
-my_atoi
-
-my_realloc_int
-my_realloc_str
-my_realloc_struct

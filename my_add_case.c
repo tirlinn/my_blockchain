@@ -6,28 +6,34 @@ int add_node(char* av_i, struct blockchain *buffer)
     int input;
     if ( (input = my_atoi(av_i)) < 0)
     {
-        printf("Error.");
+        write(1, "Error.\n", my_strlen("Error.\n"));
         return 1;
     }
 
     for (int i = 0; i < buffer->nodes.size; i++)
         if (input == buffer->nodes.values[i])
         {
-            printf("This node already exists.\n");
+            write(1, "This node already exists.\n", my_strlen("This node already exists.\n"));
             return 1;
         }
-
+    
     buffer->nodes.size++;
     tmp = buffer->nodes.size;
     if (tmp % 10 == 0)
     {
-        buffer->nodes.values = my_realloc_int(buffer->nodes.values, tmp-1, sizeof(int)*(tmp + 10));
-        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, sizeof(struct node_blocks)*tmp, sizeof(struct node_blocks) *(tmp + 10));
+        buffer->nodes.values = my_realloc_int(buffer->nodes.values, tmp, sizeof(int)*(tmp + 10));
+        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, sizeof(struct s_node_blocks)*tmp, sizeof(struct s_node_blocks) *(tmp + 10));
         for (int i = tmp; i < tmp + 10; i++)
             buffer->node_blocks[tmp].content = malloc(sizeof(char*) * 10);
     }
     buffer->nodes.values[tmp] = input;
     buffer->node_blocks[tmp].content_size = 0;
+
+    char temporary[16]; //REMOVE
+    my_itoa(temporary, buffer->nodes.values[tmp]); //REMOVE
+    write(1, temporary, my_strlen(temporary)); //REMOVE
+
+    write(1, "Successfully added node.\n", my_strlen("Successfully added node.\n"));
 
     return 0;
 }
@@ -44,75 +50,94 @@ void remember_block(char* av_b, struct blockchain *buffer)
         buffer->blocks.size++;
         int tmp = buffer->blocks.size;
         if(tmp%10 == 0)
-            buffer->blocks.list = my_realloc_str(buffer->blocks.list, tmp - 1, sizeof(char*) * (tmp + 10));
+            buffer->blocks.list = my_realloc_arr(buffer->blocks.list, tmp - 1, sizeof(char*) * (tmp + 10));
         buffer->blocks.list[tmp] = malloc(sizeof(char) * (my_strlen(av_b) + 1));
         my_strcpy(buffer->blocks.list[tmp], av_b);
     }
+
+    write(1, "Successfully remembered block.\n", my_strlen("Successfully remembered block.\n"));
 }
 
-void add_block(char* av_b, char* av_i, struct blockchain *buffer)
+int add_block(char* av_b, char* av_i, struct blockchain *buffer)
 {
     int pos;
-    // add new block to struct blocks if it doesn't exis
-    remember_block(av_b, buffer);
+    int input;
+    int tmp;
+    if ( (input = my_atoi(av_i)) < 0)
+    {
+        write(1, "Error.\n", my_strlen("Error.\n"));
+        return 1;
+    }
     //find position of the node in struct nodes.
     for (pos = 0; pos < buffer->nodes.size; pos++)
-        if (my_strcmp(av_i, buffer->nodes.values[pos]) == 0) break;
+        if (input == buffer->nodes.values[pos])
+        {
+            break;
+        }
     // check if the node already exists
     if (pos == buffer->nodes.size)
     {
-        printf("Node doesn't exist.");
+        write(1, "Node doesn't exist.\n", my_strlen("Node doesn't exist.\n"));
         return 1;
     }
+    // add new block to struct blocks if it doesn't exis
+    remember_block(av_b, buffer);
     //check if the block already exists
     for (int j = 0; j < buffer->node_blocks->content_size; j++)
         if (my_strcmp(av_b, buffer->node_blocks->content[j]) == 0)
         {
-            printf("This block already exists.\n");
+            write(1, "This block already exists.\n", my_strlen("This block already exists.\n"));
             return 1;
         }
     //add block to the node
     buffer->node_blocks[pos].content_size++;
     tmp = buffer->node_blocks[pos].content_size;
-    if(tmp%10 == 0)
-        buffer->node_blocks[pos].content = my_realloc_int(buffer->node_blocks.values, tmp - 1, sizeof(char*) * (tmp + 10);
+    if(tmp % 10 == 0)
+        buffer->node_blocks[pos].content = my_realloc_arr(buffer->node_blocks[pos].content, tmp - 1, sizeof(char*) * (tmp + 10));
     buffer->node_blocks[pos].content[tmp] = malloc(sizeof(char)*(my_strlen(av_b) + 1));
     my_strcpy(buffer->node_blocks[pos].content[tmp], av_b);
+
+    write(1, "Successfully added block.\n", my_strlen("Successfully added block.\n"));
 
     return 0;
 }
 
-int add_case (char** av, int *i, struct blockchain* buffer)
+int add_case (char** av, int ac, int *i, struct blockchain* buffer)
 {
-    switch (0)
+    if (my_strcmp(av[*i], "node") == 0)
     {
-        case my_strcmp(av[*i], "node"):
-            if (!av[++(*i)])
-            {
-                printf("You should specify nid.");
-                return 1;
-            }
-            if (add_node(av[*i], buffer) == 1) return 1;
-            break;
-
-        case my_strcmp(av[*i], "block"):
-            if (!av[++(*i)])
-            {
-                printf("You should specify bid.");
-                return 1;
-            }
-            if (!av[(*i) + 1])
-            {
-                printf("You should specify nid.");
-                return 1;
-            }
-            while(av[++(*i)])
-                add_block(av[2], av[*i], buffer);
-            break;
-
-        default:
-            printf("Command not found.");
+        if (ac == 2)
+        {
+            write(1, "You should specify nid.\n", my_strlen("You should specify nid.\n"));
             return 1;
+        }
+        else if (add_node(av[++(*i)], buffer) == 1)
+            return 1;
+        char tmp[16]; //REMOVE
+        my_itoa(tmp, buffer->nodes.values[0]); //REMOVE
+        write(1, tmp, my_strlen(tmp)); //REMOVE
+    }
+    else if (my_strcmp(av[*i], "block") == 0)
+    {
+        if (ac == 2)
+        {
+            write(1, "You should specify bid.\n", my_strlen("You should specify bid.\n"));
+            return 1;
+        }
+        else if (ac == 3)
+        {
+            write(1, "You should specify nid.\n", my_strlen("You should specify nid.\n"));
+            return 1;
+        }
+        else
+            *i = 3;
+        while(*i < ac)
+            if (add_block(av[2], av[(*i)++], buffer) == 1) return 1;
+    }
+    else
+    {
+        write(1, "Command not found.\n", my_strlen("Command not found.\n"));
+        return 1;
     }
 
     return 0;
