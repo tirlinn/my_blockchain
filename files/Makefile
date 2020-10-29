@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g3 -fsanitize=address -Wall -Werror -Wextra
 INCLUDES = -I./
-SRCS = my_blockchain.c my_add_case.c my_func.c
+SRCS = my_blockchain.c my_add_case.c my_func.c my_rm_case.c
 OBJS = $(SRCS:.c=.o)
 MAIN = my_blockchain
 

@@ -49,7 +49,12 @@ int add_block(char* av_b, char* av_i, struct blockchain *buffer);
 int add_case (char** av, int ac, int *i, struct blockchain* buffer);
 //my_blockchain.c
 char* is_sync(struct blockchain buffer);
-char** sort_input (char* input, int* ac, char** av);
+void sort_input (char* input, int* ac, char** av);
 int check_input(char* input, struct blockchain* buffer);
-struct blockchain *prompt(struct blockchain *buffer);
+void prompt(struct blockchain *buffer);
 char* my_readline();
+//my_remove_case.c
+int rm_node(char* av_i, struct blockchain* buffer);
+int forget_block(char* av_b, struct blockchain* buffer);
+int rm_block(char* av_b, struct blockchain* buffer);
+int rm_case(char** av, int ac, int* i, struct blockchain* buffer);

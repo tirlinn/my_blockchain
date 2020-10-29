@@ -11,22 +11,22 @@ int main()
 {
     int file_fd = open("blockchain", O_CREAT || O_RDWR);
 
-    struct blockchain *buffer = malloc(sizeof(struct blockchain));
-    buffer->nodes.size = 0;
-    buffer->nodes.values = malloc(sizeof(int) * 10);
-    buffer->blocks.size = 0;
-    buffer->blocks.list = malloc(sizeof(char*) * 10);
+    struct blockchain buffer;
+    buffer.nodes.size = 0;
+    buffer.nodes.values = malloc(sizeof(int) * 10);
+    buffer.blocks.size = 0;
+    buffer.blocks.list = malloc(sizeof(char*) * 10);
     for (int i = 0; i < 10; i++)
-        buffer->node_blocks = malloc(sizeof(struct s_node_blocks) * 10);
+        buffer.node_blocks = malloc(sizeof(struct s_node_blocks) * 10);
     for (int i = 0; i < 10; i++)
     {
-        buffer->node_blocks[i].content = malloc(sizeof(char*) * 10);
-        buffer->node_blocks[i].content_size = 0;
+        buffer.node_blocks[i].content = malloc(sizeof(char*) * 10);
+        buffer.node_blocks[i].content_size = 0;
     }
 
     // buffer = READBACKUP ????;
 
-    buffer = prompt(buffer);
+    prompt(&buffer);
 
     // WRITEBACKUP ???;
 
@@ -55,7 +55,7 @@ void get_status(struct blockchain buffer)
     write(1, output, my_strlen(output));
 }
 
-char** sort_input (char* input, int* ac, char** av)
+void sort_input (char* input, int* ac, char** av)
 {
     *ac = 0;
 
@@ -70,8 +70,6 @@ char** sort_input (char* input, int* ac, char** av)
         i--;
         (*ac)++;
     }
-
-    return av;
 }
 
 // void ls_case(char* av_i, struct blockchain* buffer)
@@ -93,7 +91,7 @@ int check_input(char* input, struct blockchain* buffer)
     char** av = malloc(sizeof(char*) * 10);
     int ac;
 
-    av = sort_input(input, &ac, av);
+    sort_input(input, &ac, av);
 
     for (int i = 0; i < ac; i++)
     {
@@ -102,11 +100,11 @@ int check_input(char* input, struct blockchain* buffer)
             i++;
             if ( add_case(av, ac, &i, buffer) == 1 ) return 1;
         }
-        // else if (ac >= 2 && my_strcmp(av[i], "rm") == 0)
-        // {
-        //     i++;
-        //     if ( rm_case(av, &i) == 1) return 1;
-        // }
+        else if (ac >= 2 && my_strcmp(av[i], "rm") == 0)
+        {
+            i++;
+            if ( rm_case(av, ac, &i, buffer) == 1) return 1;
+        }
         // else if (my_strcmp(av[i], "ls") == 0)
         // {
         //     if(ac > 1)
@@ -141,29 +139,29 @@ int check_input(char* input, struct blockchain* buffer)
 
 char* my_readline()
 {
-    char *buffer = malloc(1);
+    char *input = malloc(1);
     int read_size = 1;
     int buf_size = 0;
     int i = 0;
 
     while( read_size )
     {
-        buffer = my_realloc_str(buffer, buf_size, (buf_size + 101) );
-        read_size = read(0, &buffer[buf_size], 100);
+        input = my_realloc_str(input, buf_size, (buf_size + 101) );
+        read_size = read(0, &input[buf_size], 100);
         buf_size = buf_size + 100;
 
         for(; i < buf_size; i++ )
-            if (buffer[i] == '\n')
+            if (input[i] == '\n')
             {
-                buffer[i] = '\0';
+                input[i] = '\0';
                 read_size = 0;
                 break;
             }
     }
-    return buffer;
+    return input;
 }
 
-struct blockchain *prompt(struct blockchain *buffer)
+void prompt(struct blockchain *buffer)
 {
     char *input;
     int exit_status;
@@ -178,6 +176,4 @@ struct blockchain *prompt(struct blockchain *buffer)
         free(input);
     }
     while ( exit_status != -1 );
-
-    return buffer;
 }
