@@ -1,40 +1,44 @@
 #include "my_blockchain.h"
 
-int add_node(char* av_i, struct blockchain *buffer)
+void remember_node(int input, int tmp, struct blockchain *buffer)
 {
-    int tmp;
-    int input;
-    if ( (input = my_atoi(av_i)) < 0)
-    {
-        write(1, "Error.\n", my_strlen("Error.\n"));
-        return 1;
-    }
-
-    for (int i = 0; i < buffer->nodes.size; i++)
-        if (input == buffer->nodes.values[i])
-        {
-            write(1, "This node already exists.\n", my_strlen("This node already exists.\n"));
-            return 1;
-        }
-
-    tmp = buffer->nodes.size;
     if (tmp % 10 == 0)
     {
-        buffer->nodes.values = my_realloc_int(buffer->nodes.values, tmp, sizeof(int)*(tmp + 10));
-        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, tmp, sizeof(struct s_node_blocks) *(tmp + 10));
+        buffer->nodes.values = my_realloc_int(buffer->nodes.values, tmp, sizeof(int) * (tmp + 10));
+        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, tmp, sizeof(struct s_node_blocks) * (tmp + 10));
         for (int i = tmp; i < tmp + 10; i++)
             buffer->node_blocks[tmp].content = malloc(sizeof(char*) * 10);
     }
     buffer->nodes.values[tmp] = input;
     buffer->node_blocks[tmp].content_size = 0;
     buffer->nodes.size++;
+}
+
+int add_node(char* av_i, struct blockchain *buffer)
+{
+    int input = 0;
+    int n_pos = 0;
+
+    if ( (input = my_atoi(av_i)) < 0)
+    {
+        write(1, "Error.\n", my_strlen("Error.\n"));
+        return 1;
+    }
+
+    if (find_node_pos(&n_pos, input, buffer))
+    {
+        write(1, "This node already exists.\n", my_strlen("This node already exists.\n"));
+        return 1;
+    }
+
+    remember_node(input, buffer->nodes.size, buffer);
 
     write(1, "Successfully added node.\n", my_strlen("Successfully added node.\n"));
 
     return 0;
 }
 
-void remember_block(char* av_b, struct blockchain *buffer)
+void remember_global_block(char* av_b, struct blockchain *buffer)
 {
     int i;
 
@@ -54,39 +58,52 @@ void remember_block(char* av_b, struct blockchain *buffer)
     }
 }
 
+void remember_node_block(char* av_b, int n_pos, int b_pos, struct blockchain *buffer)
+{
+    if (n_pos % 10 == 0)
+        buffer->node_blocks[n_pos].content = my_realloc_arr(buffer->node_blocks[n_pos].content, n_pos - 1, sizeof(char*) * (n_pos + 10));
+    buffer->node_blocks[n_pos].content[b_pos] = malloc(sizeof(char) * (my_strlen(av_b) + 1));
+    my_strcpy(buffer->node_blocks[n_pos].content[b_pos], av_b);
+    buffer->node_blocks[n_pos].content_size++;
+}
+
+bool find_node_block_pos(char* av_b, int n_pos, int *b_pos, struct blockchain* buffer)
+{
+    for (*b_pos = 0; *b_pos < buffer->node_blocks[n_pos].content_size; (*b_pos)++)
+        if (my_strcmp(av_b, buffer->node_blocks[n_pos].content[*b_pos]) == 0)
+        {
+            return false;
+        }
+    return true;
+}
+
 int add_block(char* av_b, char* av_i, struct blockchain *buffer)
 {
-    int pos;
+    int n_pos;
     int input;
+    int b_pos;
+    
     if ( (input = my_atoi(av_i)) < 0)
     {
         write(1, "Error.\n", my_strlen("Error.\n"));
         return 1;
     }
-    //find position of the node in struct nodes.
-    for (pos = 0; pos < buffer->nodes.size; pos++)
-        if (input == buffer->nodes.values[pos])  break;
-    // check if the node already exists
-    if (pos == buffer->nodes.size)
+
+    if (!find_node_pos(&n_pos, input, buffer))
     {
         write(1, "Node doesn't exist.\n", my_strlen("Node doesn't exist.\n"));
         return 1;
     }
-    //check if the block already exists
-    for (int j = 0; j < buffer->node_blocks[pos].content_size; j++)
-        if (my_strcmp(av_b, buffer->node_blocks[pos].content[j]) == 0)
-        {
-            write(1, "This block already exists.\n", my_strlen("This block already exists.\n"));
-            return 1;
-        }
-    // add new block to struct blocks if it doesn't exis
-    remember_block(av_b, buffer);
-    //add block to the node
-    if(pos % 10 == 0)
-        buffer->node_blocks[pos].content = my_realloc_arr(buffer->node_blocks[pos].content, pos - 1, sizeof(char*) * (pos + 10));
-    buffer->node_blocks[pos].content[pos] = malloc(sizeof(char)*(my_strlen(av_b) + 1));
-    my_strcpy(buffer->node_blocks[pos].content[pos], av_b);
-    buffer->node_blocks[pos].content_size++;
+
+    if (!find_node_block_pos(av_b, n_pos, &b_pos, buffer))
+    {
+        write(1, "This block already exists.\n", my_strlen("This block already exists.\n"));
+        return 1;
+    }
+
+    remember_global_block(av_b, buffer);
+
+    remember_node_block(av_b, n_pos, b_pos, buffer);
 
     write(1, "Successfully added block.\n", my_strlen("Successfully added block.\n"));
 
