@@ -113,31 +113,33 @@ int forget_global_block(char* av_b, struct blockchain* buffer)
     return 0;
 }
 
-void forget_the_block_in_node(char *av_b, int i, struct blockchain* buffer)
+void forget_the_block_in_node(char* av_b, int n_pos, struct blockchain* buffer)
 {
-    for (int j = 0; j < buffer->node_blocks[i].content_size; j++)
-        if (my_strcmp(av_b, buffer->node_blocks[i].content[j]) == 0)
+    for (int b_pos = 0; b_pos < buffer->node_blocks[n_pos].content_size; b_pos++)
+    {
+        if (my_strcmp(av_b, buffer->node_blocks[n_pos].content[b_pos]) == 0)
         {
-            free(buffer->node_blocks[i].content[j]);
-            for (; j < buffer->node_blocks[i].content_size - 1; j++)
-                buffer->node_blocks[i].content[j] = buffer->node_blocks[i].content[j + 1];
-            buffer->node_blocks[i].content[j] = 0;
-            buffer->node_blocks[i].content_size--;
-            int tmp = buffer->node_blocks[i].content_size;
+            free(buffer->node_blocks[n_pos].content[b_pos]);
+            for (; b_pos < buffer->node_blocks[n_pos].content_size - 1; b_pos++)
+                buffer->node_blocks[n_pos].content[b_pos] = buffer->node_blocks[n_pos].content[b_pos + 1];
+            buffer->node_blocks[n_pos].content[b_pos] = 0;
+            buffer->node_blocks[n_pos].content_size--;
+            int tmp = buffer->node_blocks[n_pos].content_size;
             if (tmp != 0 && tmp % 10 == 0)
-                buffer->node_blocks[i].content = my_realloc_arr(buffer->node_blocks[i].content, tmp + 10, sizeof(char*) * (tmp));
+                buffer->node_blocks[n_pos].content = my_realloc_arr(buffer->node_blocks[n_pos].content, tmp + 10, sizeof(char*) * (tmp));
         }
+    }
 }
 
-int rm_block(char* av_b, struct blockchain *buffer)
+int rm_block(char* av_b, struct blockchain* buffer)
 {
     if (forget_global_block(av_b, buffer) == 1)
     {
         write(1, "This block doesn't exist.\n", my_strlen("This block doens't exist.\n"));
         return 1;
     }
-    for (int i = 0; i < buffer->nodes.size; i++)
-        forget_the_block_in_node(av_b, i, buffer);
+    for (int n_pos = 0; n_pos < buffer->nodes.size; n_pos++)
+        forget_the_block_in_node(av_b, n_pos, buffer);
 
     write(1, "Successfully removed block from all nodes.\n", my_strlen("Successfully removed block from all nodes.\n"));
 
@@ -165,7 +167,7 @@ int rm_case(char** av, int ac, int* i, struct blockchain* buffer)
         else if (rm_block(av[++(*i)], buffer) == 1) return 1;
 
         for (int i = 0; i < buffer->nodes.size; i++)
-            for (int j = 0; j <  buffer->node_blocks[i].content_size; j++)
+            for (int j = 0; j < buffer->node_blocks[i].content_size; j++)
                 write(1, buffer->node_blocks[i].content[j], my_strlen(buffer->node_blocks[i].content[j])); //REMOVE
     }
     else
