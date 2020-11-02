@@ -119,7 +119,7 @@ void forget_the_block_in_node(char* av_b, int n_pos, struct blockchain* buffer)
     {
         if (my_strcmp(av_b, buffer->node_blocks[n_pos].content[b_pos]) == 0)
         {
-            free(buffer->node_blocks[n_pos].content[b_pos]);
+            // free(buffer->node_blocks[n_pos].content[b_pos]);
             for (; b_pos < buffer->node_blocks[n_pos].content_size - 1; b_pos++)
                 buffer->node_blocks[n_pos].content[b_pos] = buffer->node_blocks[n_pos].content[b_pos + 1];
             buffer->node_blocks[n_pos].content[b_pos] = 0;

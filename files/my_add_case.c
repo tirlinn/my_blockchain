@@ -38,15 +38,13 @@ int add_node(char* av_i, struct blockchain* buffer)
     return 0;
 }
 
-void remember_global_block(char* av_b, struct blockchain* buffer)
+void remember_global_block(char* av_b, int* g_pos, struct blockchain* buffer)
 {
-    int i;
-
-    for (i = 0; i < buffer->blocks.size; i++)
-        if (my_strcmp(av_b, buffer->blocks.list[i]) == 0)
+    for (*g_pos = 0; *g_pos < buffer->blocks.size; (*g_pos)++)
+        if (my_strcmp(av_b, buffer->blocks.list[*g_pos]) == 0)
             break;
 
-    if (i == buffer->blocks.size)
+    if (*g_pos == buffer->blocks.size)
     {
         int tmp = buffer->blocks.size;
         if (tmp % 10 == 0 && tmp != 0)
@@ -58,12 +56,11 @@ void remember_global_block(char* av_b, struct blockchain* buffer)
     }
 }
 
-void remember_node_block(char* av_b, int n_pos, int b_pos, struct blockchain* buffer)
+void remember_node_block(int g_pos, int n_pos, int b_pos, struct blockchain* buffer)
 {
     if (b_pos % 10 == 0 && b_pos != 0)
         buffer->node_blocks[n_pos].content = my_realloc_arr(buffer->node_blocks[n_pos].content, b_pos, sizeof(char*) * (b_pos + 10));
-    buffer->node_blocks[n_pos].content[b_pos] = malloc(sizeof(char) * (my_strlen(av_b) + 1));
-    my_strcpy(buffer->node_blocks[n_pos].content[b_pos], av_b);
+    buffer->node_blocks[n_pos].content[b_pos] = buffer->blocks.list[g_pos];
     buffer->node_blocks[n_pos].content_size++;
 }
 
@@ -84,6 +81,7 @@ int add_block(char* av_b, char* av_i, struct blockchain* buffer)
     int n_pos;
     int input;
     int b_pos;
+    int g_pos;
 
     if ((input = my_atoi(av_i)) < 0)
     {
@@ -103,9 +101,9 @@ int add_block(char* av_b, char* av_i, struct blockchain* buffer)
         return 1;
     }
 
-    remember_global_block(av_b, buffer);
+    remember_global_block(av_b, &g_pos, buffer);
 
-    remember_node_block(av_b, n_pos, b_pos, buffer);
+    remember_node_block(g_pos, n_pos, b_pos, buffer);
 
     write(1, "Successfully added block.\n", my_strlen("Successfully added block.\n"));
 

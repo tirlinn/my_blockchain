@@ -46,8 +46,8 @@ void my_itoa(char* p1, int p2);
 //my_add_case.c
 void remember_node(int input, int tmp, struct blockchain* buffer);
 int add_node(char* av_i, struct blockchain* buffer);
-void remember_global_block(char* av_b, struct blockchain* buffer);
-void remember_node_block(char* av_b, int n_pos, int b_pos, struct blockchain* buffer);
+void remember_global_block(char* av_b, int* g_pos, struct blockchain* buffer);
+void remember_node_block(int g_pos, int n_pos, int b_pos, struct blockchain* buffer);
 bool find_node_block_pos(char* av_b, int n_pos, int* b_pos, struct blockchain* buffer);
 int add_block(char* av_b, char* av_i, struct blockchain* buffer);
 int add_case(char** av, int ac, int* i, struct blockchain* buffer);
@@ -68,3 +68,11 @@ int forget_global_block(char* av_b, struct blockchain* buffer);
 void forget_the_block_in_node(char* av_b, int n_pos, struct blockchain* buffer);
 int rm_block(char* av_b, struct blockchain* buffer);
 int rm_case(char** av, int ac, int* i, struct blockchain* buffer);
+//my_ls_case.c
+int ls_case(char* av_i, struct blockchain* buffer);
+int list_blocks(struct blockchain* buffer);
+int list_nodes(struct blockchain* buffer);
+//my_sync.c
+int synchronise(struct blockchain* buffer);
+//my_blockchain.h
+int writebackup(int file_fd, struct blockchain buffer);
