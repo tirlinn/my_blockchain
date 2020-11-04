@@ -13,12 +13,12 @@ int my_strlen(char* param_1)
         if (!param_1[i]) return i;
 }
 
-void my_strcpy (char* str1, char* str2)
+void my_strcpy(char* str1, char* str2)
 {
     for (int i = 0; (str1[i] = str2[i]); i++);
 }
 
-void my_strcat (char* str1, char* str2)
+void my_strcat(char* str1, char* str2)
 {
     int i = strlen(str1);
     for (int j = 0; (str1[i++] = str2[j]); j++);
@@ -27,7 +27,7 @@ void my_strcat (char* str1, char* str2)
 int* my_realloc_int(int* array, int size, int new_size)
 {
     int* out = malloc(sizeof(int) * new_size);
-    for(int i = 0; i < size; i++)
+    for (int i = 0; i < size && i < new_size; i++)
         out[i] = array[i];
     free(array);
     return out;
@@ -36,7 +36,7 @@ int* my_realloc_int(int* array, int size, int new_size)
 char* my_realloc_str(char* str, int old_size, int size)
 {
     char* out = malloc(size);
-    for (int i = 0; i < old_size ; i++)
+    for (int i = 0; i < old_size && i < size; i++)
         out[i] = str[i];
     free(str);
     return out;
@@ -45,16 +45,16 @@ char* my_realloc_str(char* str, int old_size, int size)
 char** my_realloc_arr(char** arr, int old_size, int size)
 {
     char** out = malloc(size);
-    for (int i = 0; i < old_size ; i++)
+    for (int i = 0; i < old_size; i++)
         out[i] = arr[i];
     free(arr);
     return out;
 }
 
-struct s_node_blocks *my_realloc_struct(struct s_node_blocks *structure, int old_size, int new_size)
+struct s_node_blocks* my_realloc_struct(struct s_node_blocks* structure, int old_size, int new_size)
 {
-    struct s_node_blocks *output = malloc(sizeof(struct s_node_blocks)*new_size);
-    for (int i = 0; i < old_size; i++)
+    struct s_node_blocks* output = malloc(sizeof(struct s_node_blocks) * new_size);
+    for (int i = 0; i < old_size && i < new_size; i++)
     {
         output[i].content = structure[i].content;
         output[i].content_size = structure[i].content_size;
@@ -63,6 +63,10 @@ struct s_node_blocks *my_realloc_struct(struct s_node_blocks *structure, int old
     {
         output[i].content = malloc(sizeof(char*) * 10);
         output[i].content_size = 0;
+    }
+    for (int i = new_size; i < old_size; i++)
+    {
+        free(structure[i].content);
     }
     free(structure);
     return output;
@@ -105,8 +109,23 @@ void my_itoa(char* p1, int p2)
     {
         *--out = '0' + p2 % 10;
         p2 /= 10;
-    }
-    while ( p2 );
+    } while (p2);
 
-    my_strcpy(p1 , out);
+    my_strcpy(p1, out);
+}
+
+int free_arr(char** arr, int ac)
+{
+    for (int i = 0; i < ac; i++)
+    {
+        free(arr[i]);
+    }
+    free(arr);
+    return 0;
+}
+
+void my_puts(char* str)
+{
+    write(1, str, my_strlen(str));
+    write(1, "\n", 1);
 }

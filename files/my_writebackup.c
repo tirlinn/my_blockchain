@@ -74,13 +74,5 @@ int writebackup(int file_fd, struct blockchain buffer)
 		}
 	}
 
-	if (i == 0)
-		write(file_fd, "\n", 1);
-	else
-	{
-		my_strcat(tmp, "\n");
-		write(file_fd, tmp, my_strlen(tmp));
-	}
-
 	return 0;
 }

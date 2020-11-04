@@ -5,9 +5,7 @@ void remember_node(int input, int tmp, struct blockchain* buffer)
     if (tmp % 10 == 0 && tmp != 0)
     {
         buffer->nodes.values = my_realloc_int(buffer->nodes.values, tmp, sizeof(int) * (tmp + 10));
-        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, tmp, sizeof(struct s_node_blocks) * (tmp + 10));
-        for (int i = tmp; i < tmp + 10; i++)
-            buffer->node_blocks[tmp].content = malloc(sizeof(char*) * 10);
+        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, tmp, tmp + 10);
     }
     buffer->nodes.values[tmp] = input;
     buffer->node_blocks[tmp].content_size = 0;

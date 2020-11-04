@@ -9,8 +9,7 @@ int main()
     buffer.nodes.values = malloc(sizeof(int) * 10);
     buffer.blocks.size = 0;
     buffer.blocks.list = malloc(sizeof(char*) * 10);
-    for (int i = 0; i < 10; i++)
-        buffer.node_blocks = malloc(sizeof(struct s_node_blocks) * 10);
+    buffer.node_blocks = malloc(sizeof(struct s_node_blocks) * 10);
     for (int i = 0; i < 10; i++)
     {
         buffer.node_blocks[i].content = malloc(sizeof(char*) * 10);
@@ -19,7 +18,7 @@ int main()
 
     if ((file_fd = open("blockchain", O_RDONLY)) > 2)
     {
-        // READBACKUP ????;
+        readbackup(file_fd, &buffer);
         close(file_fd);
     }
 
@@ -31,9 +30,17 @@ int main()
         close(file_fd);
     }
 
+    int troll = buffer.nodes.size + (10 - buffer.nodes.size % 10) * ((buffer.nodes.size % 10 + 9) / 10);
+    for (int i = 0; i < troll; i++)
+    {
+        free(buffer.node_blocks[i].content);
+    }
+    free(buffer.node_blocks);
+    free_arr(buffer.blocks.list, buffer.blocks.size);
+    free(buffer.nodes.values);
+
     return 0;
 }
-
 
 char* is_sync(struct blockchain buffer)
 {
@@ -55,97 +62,109 @@ void get_status(struct blockchain buffer)
     write(1, output, my_strlen(output));
 }
 
-void sort_input(char* input, int* ac, char** av)
+char** sort_input(char* input, char separator, int* ac, char** av)
 {
     *ac = 0;
 
     for (int i = 0; input[i]; i++)
     {
-        if (input[i] == ' ') continue;
+        if (input[i] == separator) continue;
+        if (*ac % 10 == 0 && *ac != 0)
+            av = my_realloc_arr(av, *ac, sizeof(char*) * (*ac + 10));
         av[*ac] = malloc(30);
         int j = 0;
-        for (; input[i] != ' ' && input[i]; j++)
+        for (; input[i] != separator && input[i]; j++)
             av[*ac][j] = input[i++];
         av[*ac][j] = '\0';
         i--;
         (*ac)++;
     }
+
+    return av;
 }
 
 int check_input(char* input, struct blockchain* buffer)
 {
     char** av = malloc(sizeof(char*) * 10);
     int ac;
+    int exit_status = 0;
 
-    sort_input(input, &ac, av);
+    sort_input(input, ' ', &ac, av);
 
-    for (int i = 0; i < ac; i++)
+    for (int i = 0; i < ac && exit_status == 0; i++)
     {
         if (ac >= 2 && my_strcmp(av[i], "add") == 0)
         {
             i++;
-            if (add_case(av, ac, &i, buffer) == 1) return 1;
+            if (add_case(av, ac, &i, buffer) == 1)
+                exit_status = 1;
         }
         else if (ac >= 2 && my_strcmp(av[i], "rm") == 0)
         {
             i++;
-            if (rm_case(av, ac, &i, buffer) == 1) return 1;
+            if (rm_case(av, ac, &i, buffer) == 1)
+                exit_status = 1;
         }
         else if (my_strcmp(av[i], "ls") == 0)
         {
             if (ac > 1)
                 i++;
-            if (ls_case(av[i], buffer) == 1) return 1;
+            if (ls_case(av[i], buffer) == 1)
+                exit_status = 1;
         }
         else if (my_strcmp(av[i], "sync") == 0)
         {
-            if (synchronise(buffer) == 1) return 1;
+            if (synchronise(buffer) == 1)
+                exit_status = 1;
         }
         else if (my_strcmp(av[i], "quit") == 0)
-        {
-            return -1;
-        }
+            exit_status = -1;
         else
         {
-            write(1, "Command not found.\n", 19);
-            return 1;
+            my_puts("Command not found.");
+            exit_status = 1;
         }
     }
 
-    return 0;
+    free_arr(av, ac);
+
+    return exit_status;
 }
 
-// void (exit_status)
-// {
-//     if (1)
-//         printf(dsafdsaf)
-//     if (2)
-//         printf(asdfasdf)
-// }
-
-char* my_readline()
-{
-    char* input = malloc(1);
-    int read_size = 1;
-    int buf_size = 0;
-    int i = 0;
-
-    while (read_size)
-    {
-        input = my_realloc_str(input, buf_size, (buf_size + 101));
-        read_size = read(0, &input[buf_size], 100);
-        buf_size = buf_size + 100;
-
-        for (; i < buf_size; i++)
-            if (input[i] == '\n')
-            {
-                input[i] = '\0';
-                read_size = 0;
-                break;
-            }
-    }
-    return input;
-}
+//void show_error(int exit_status)
+//{
+//    switch (exit_status)
+//    {
+//        case 1:
+//            my_puts("E");
+//        case 2:
+//            my_puts("E");
+//        case 3:
+//            my_puts("E");
+//        case 4:
+//            my_puts("E");
+//        case 5:
+//            my_puts("E");
+//        case 6:
+//            my_puts("E");
+//        case 7:
+//            my_puts("E");
+//        case 8:
+//            my_puts("E");
+//        case 9:
+//            my_puts("E");
+//        case 10:
+//            my_puts("E");
+//        case 11:
+//            my_puts("E");
+//        case 12:
+//            my_puts("E");
+//        case 13:
+//            my_puts("E");
+//        default:
+//            my_puts("E");
+//    }
+//}
 
 void prompt(struct blockchain* buffer)
 {
@@ -155,10 +174,10 @@ void prompt(struct blockchain* buffer)
     do
     {
         get_status(*buffer);
-        input = my_readline();
+        input = my_readline(0);
         exit_status = check_input(input, buffer);
-        // if (exit_status > 0)
-        //     error show;
+        //if (exit_status > 0)
+        //    show_error(exit_status);
         free(input);
     } while (exit_status != -1);
 }

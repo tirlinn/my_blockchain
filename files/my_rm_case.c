@@ -12,10 +12,14 @@ bool find_node_pos(int* pos, int input, struct blockchain* buffer)
 
 bool block_unique(int pos, char* str, struct blockchain* buffer)
 {
-    for (int j = 0; j != pos && j < buffer->nodes.size; j++)
-        for (int k = 0; k < buffer->node_blocks[j].content_size; k++)
-            if (strcmp(str, buffer->node_blocks[j].content[k]) == 0)
-                return false;
+    for (int j = 0; j < buffer->nodes.size; j++)
+    {
+        if (j == pos) continue;
+        else
+            for (int k = 0; k < buffer->node_blocks[j].content_size; k++)
+                if (strcmp(str, buffer->node_blocks[j].content[k]) == 0)
+                    return false;
+    }
     return true;
 }
 
@@ -25,24 +29,31 @@ void forget_the_node_blocks(int pos, struct blockchain* buffer)
     {
         if (block_unique(pos, buffer->node_blocks[pos].content[i], buffer))
             forget_global_block(buffer->node_blocks[pos].content[i], buffer);
-        free(buffer->node_blocks[pos].content[i]);
+        //free(buffer->node_blocks[pos].content[i]);
     }
     buffer->node_blocks[pos].content_size = 0;
 }
 
 void forget_the_node(int pos, struct blockchain* buffer)
 {
+    struct s_node_blocks tmp = buffer->node_blocks[pos];
     for (; pos < buffer->nodes.size - 1; pos++)
+    {
         buffer->nodes.values[pos] = buffer->nodes.values[pos + 1];
+        buffer->node_blocks[pos] = buffer->node_blocks[pos + 1];
+    }
     buffer->nodes.size--;
     buffer->nodes.values[pos] = 0;
+    buffer->node_blocks[pos] = tmp;
+    for (int i = 0; i < buffer->node_blocks[pos].content_size; i++)
+        buffer->node_blocks[pos].content = 0;
+    buffer->node_blocks[pos].content_size = 0;
 
-    if (pos % 10 == 0 && pos != 0)
+    int size = buffer->nodes.size;
+    if (size % 10 == 0 && size != 0)
     {
-        buffer->nodes.values = my_realloc_int(buffer->nodes.values, (pos + 10), sizeof(int) * pos);
-        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, (pos + 10), sizeof(struct s_node_blocks) * pos);
-        for (int i = 0; i < 10; i++)
-            buffer->node_blocks[pos + i].content_size = 0;
+        buffer->nodes.values = my_realloc_int(buffer->nodes.values, (size + 10), size);
+        buffer->node_blocks = my_realloc_struct(buffer->node_blocks, (size + 10), size);
     }
 }
 
@@ -133,13 +144,14 @@ void forget_the_block_in_node(char* av_b, int n_pos, struct blockchain* buffer)
 
 int rm_block(char* av_b, struct blockchain* buffer)
 {
+    for (int n_pos = 0; n_pos < buffer->nodes.size; n_pos++)
+        forget_the_block_in_node(av_b, n_pos, buffer);
+
     if (forget_global_block(av_b, buffer) == 1)
     {
         write(1, "This block doesn't exist.\n", my_strlen("This block doens't exist.\n"));
         return 1;
     }
-    for (int n_pos = 0; n_pos < buffer->nodes.size; n_pos++)
-        forget_the_block_in_node(av_b, n_pos, buffer);
 
     write(1, "Successfully removed block from all nodes.\n", my_strlen("Successfully removed block from all nodes.\n"));
 

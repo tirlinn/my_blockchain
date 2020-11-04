@@ -7,6 +7,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+#ifndef READLINE_READ_SIZE
+#define READLINE_READ_SIZE 70
+#endif
+
 struct s_nodes
 {
     int size;
@@ -43,6 +47,8 @@ char** my_realloc_arr(char** arr, int old_size, int size);
 struct s_node_blocks* my_realloc_struct(struct s_node_blocks* structure, int old_size, int new_size);
 int my_atoi(const char* input);
 void my_itoa(char* p1, int p2);
+int free_arr(char** arr, int ac);
+void my_puts(char* str);
 //my_add_case.c
 void remember_node(int input, int tmp, struct blockchain* buffer);
 int add_node(char* av_i, struct blockchain* buffer);
@@ -53,10 +59,9 @@ int add_block(char* av_b, char* av_i, struct blockchain* buffer);
 int add_case(char** av, int ac, int* i, struct blockchain* buffer);
 //my_blockchain.c
 char* is_sync(struct blockchain buffer);
-void sort_input(char* input, int* ac, char** av);
+char** sort_input(char* input, char separator, int* ac, char** av);
 int check_input(char* input, struct blockchain* buffer);
 void prompt(struct blockchain* buffer);
-char* my_readline();
 //my_remove_case.c
 bool find_node_pos(int* pos, int input, struct blockchain* buffer);
 bool block_unique(int pos, char* str, struct blockchain* buffer);
@@ -74,5 +79,13 @@ int list_blocks(struct blockchain* buffer);
 int list_nodes(struct blockchain* buffer);
 //my_sync.c
 int synchronise(struct blockchain* buffer);
-//my_blockchain.h
+//my_writebackup.c
 int writebackup(int file_fd, struct blockchain buffer);
+//my_readline.c
+int buf_has_new_line(char* buf);
+int copy_rest_of_previous_line(char* buf, char* line);
+int buf_to_line(char* buf, char* line, int line_index);
+void clear(char* buf);
+char* my_readline(int fd);
+//my_readbackup.c
+int readbackup(int file_fd, struct blockchain* buffer);
